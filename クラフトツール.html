@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>クラフトツール - ソート済</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.4rem; color: #2c3e50; border-left: 5px solid #2ecc71; padding-left: 15px; margin-bottom: 20px; }
+        
+        .tab-group { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .tab { padding: 10px 20px; cursor: pointer; border-radius: 8px 8px 0 0; background: #eee; border: none; font-weight: bold; transition: 0.3s; }
+        .tab.active { background: #2ecc71; color: white; }
+
+        .input-section { display: flex; gap: 15px; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px; align-items: flex-end; }
+        .input-group { flex: 1; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.85rem; color: #555; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; box-sizing: border-box; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card { padding: 12px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fff; }
+        .stat-card.blue { background-color: #ebf5ff; border-color: #bad9f9; }
+        .stat-card.red { background-color: #fff5f5; border-color: #feb2b2; }
+        .stat-label { font-size: 0.75rem; color: #666; display: block; margin-bottom: 4px; }
+        .stat-value { font-size: 1.1rem; font-weight: bold; }
+
+        h3 { font-size: 1.1rem; margin: 20px 0 10px; color: #444; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #edf2f7; }
+        th { background-color: #f7fafc; font-weight: bold; color: #4a5568; }
+        .material-count { font-weight: bold; color: #2f855a; font-size: 1.1rem; text-align: right; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>クラフトツール</h1>
+    
+    <div class="tab-group">
+        <button id="btn-weapon" class="tab active" onclick="switchTab('weapon')">武器製造</button>
+        <button id="btn-craft" class="tab" onclick="switchTab('craft')">手工芸</button>
+    </div>
+
+    <div class="input-section">
+        <div class="input-group">
+            <label for="itemSelect">作成アイテム（名前順）</label>
+            <select id="itemSelect" onchange="calculate()"></select>
+        </div>
+        <div class="input-group" style="flex: 0 0 100px;">
+            <label for="itemCount">個数</label>
+            <input type="number" id="itemCount" value="1" min="1" oninput="calculate()">
+        </div>
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<script>
+// 生データ
+const rawData = {
+    weapon: [
+        { name: "ナイフ", price: 0, labor: 25, skill: 0, mats: { "アルミニウム": 5, "鉄": 10, "銅": 5 } },
+        { name: "ピストル", price: 30000, labor: 50, skill: 1000, mats: { "金属スクラップ": 20, "鉄": 10, "銅": 10 } },
+        { name: "ヘビーピストル", price: 30000, labor: 100, skill: 1000, mats: { "アルミニウム": 10, "ゴム": 10, "鉄": 15, "鋼鉄": 15 } },
+        { name: "ゴルフクラブ", price: 10000, labor: 100, skill: 100, mats: { "アルミ": 3, "ゴム": 3, "布": 3, "スクラップ": 3, "鉄": 3, "銅": 3, "鋼鉄": 3 } },
+        { name: "レンチ", price: 300000, labor: 400, skill: 1000, mats: { "アルミ": 7, "ゴム": 7, "布": 7, "スクラップ": 7, "鉄": 7, "銅": 7, "鋼鉄": 7 } },
+        { name: "ミニSMG", price: 250000, labor: 200, skill: 10000, mats: { "金属スクラップ": 30, "鉄": 20, "銅": 10, "鋼鉄": 5 } },
+        { name: "マイクロSMG", price: 300000, labor: 200, skill: 10000, mats: { "アルミニウム": 10, "金属スクラップ": 20, "鉄": 15, "銅": 5 } },
+        { name: "SMG", price: 350000, labor: 300, skill: 10000, mats: { "アルミ": 7, "ゴム": 7, "スクラップ": 15, "鉄": 15, "銅": 7 } },
+        { name: "SMG MK2", price: 350000, labor: 300, skill: 10000, mats: { "ゴム": 5, "金属スクラップ": 20, "鉄": 15, "銅": 10, "鋼鉄": 5 } },
+        { name: "アサルトSMG", price: 450000, labor: 350, skill: 10000, mats: { "アルミ": 5, "スクラップ": 20, "鉄": 20, "銅": 10, "鋼鉄": 10 } },
+        { name: "ヘビーライフル", price: 500000, labor: 450, skill: 10000, mats: { "アルミ": 25, "ゴム": 25, "鉄": 25, "銅": 25, "鋼鉄": 25 } },
+        { name: "カービンライフル", price: 600000, labor: 450, skill: 10000, mats: { "アルミニウム": 20, "ゴム": 20, "鉄": 20, "銅": 20 } },
+        { name: "カービン MK2", price: 800000, labor: 450, skill: 10000, mats: { "アルミニウム": 30, "ゴム": 30, "鉄": 30, "銅": 30 } },
+        { name: "ブルパップ", price: 650000, labor: 400, skill: 10000, mats: { "アルミニウム": 30, "ゴム": 15, "鉄": 20, "銅": 20 } },
+        { name: "ブルパップ MK2", price: 800000, labor: 450, skill: 10000, mats: { "アルミニウム": 15, "ゴム": 20, "鉄": 30, "銅": 20 } },
+        { name: "サプレッサー", price: 150000, labor: 50, skill: 10000, mats: { "ゴム": 20, "プラスチック": 20, "金属スクラップ": 20 } },
+        { name: "ヘビーバレル", price: 70000, labor: 50, skill: 20000, mats: { "プラスチック": 20, "金属スクラップ": 20, "鋼鉄": 20 } },
+        { name: "拡張クリップ", price: 150000, labor: 100, skill: 20000, mats: { "プラスチック": 20, "鉄": 20, "銅": 15, "鋼鉄": 20 } },
+        { name: "ミディアムスコープ", price: 250000, labor: 50, skill: 20000, mats: { "アルミニウム": 5, "ガラス": 5, "ゴム": 5 } },
+        { name: "ホロサイト", price: 250000, labor: 50, skill: 20000, mats: { "アルミ": 5, "ガラス": 5, "ゴム": 5, "スクラップ": 5, "銅": 5, "鋼鉄": 5 } },
+        { name: "拡張SMGクリップ", price: 80000, labor: 75, skill: 20000, mats: { "プラスチック": 15, "鉄": 20, "銅": 15, "鋼鉄": 20 } },
+        { name: "拡張ピストルクリップ", price: 80000, labor: 70, skill: 20000, mats: { "プラスチック": 7, "鉄": 15, "銅": 7, "鋼鉄": 15 } },
+        { name: "マクロスコープ", price: 250000, labor: 50, skill: 20000, mats: { "アルミニウム": 5, "ガラス": 5, "鋼鉄": 5 } },
+        { name: "スモールスコープ", price: 250000, labor: 50, skill: 20000, mats: { "アルミニウム": 5, "ガラス": 5, "ゴム": 5, "プラスチック": 5 } },
+        { name: "タクティカルライト", price: 300000, labor: 50, skill: 20000, mats: { "ゴム": 30, "プラスチック": 30, "金属スクラップ": 30 } },
+        { name: "フォアグリップ", price: 30000, labor: 50, skill: 20000, mats: { "プラスチック": 15, "金属スクラップ": 15, "鋼鉄": 15 } }
+    ],
+    craft: [
+        { name: "Lockpick", price: 0, labor: 10, skill: 0, mats: { "鉄": 3, "銅鉄": 3 } },
+        { name: "thermite_bom", price: 200000, labor: 100, skill: 5000, mats: { "アルミ": 15, "ゴム": 15, "ジャンク電子部品": 10, "鉄": 15, "鉄の粉": 40, "銅": 15 } },
+        { name: "ジャンク電子部品", price: 0, labor: 10, skill: 0, mats: { "Crypto Stick": 4 } },
+        { name: "バット", price: 30000, labor: 400, skill: 1000, mats: { "ゴム": 6, "プラスチック": 6, "布": 6, "鉄": 6, "銅鉄": 6 } },
+        { name: "9mm弾", price: 0, labor: 10, skill: 0, mats: { "金属スクラップ": 1, "鉄の粉": 5 } },
+        { name: "5.56x45弾", price: 0, labor: 20, skill: 0, mats: { "金属スクラップ": 3, "鉄の粉": 10 } },
+        { name: "ボール", price: 10000, labor: 200, skill: 100, mats: { "ゴム": 4, "プラスチック": 4, "布": 4, "鉄の粉": 4 } },
+        { name: "Bag", price: 0, labor: 50, skill: 500, mats: { "ゴム": 15, "布": 15 } },
+        { name: "cutter", price: 350000, labor: 100, skill: 5000, mats: { "ジャンク電子部品": 15, "鉄": 15, "鋼鉄": 15 } },
+        { name: ".45 ACP弾", price: 0, labor: 15, skill: 0, mats: { "金属スクラップ": 2, "鉄の粉": 7 } },
+        { name: "Pacific Thermite", price: 100000, labor: 50, skill: 20000, mats: { "アルミニウム": 10, "ゴム": 10, "鉄": 20, "鉄の粉": 40, "銅": 15 } },
+        { name: "ヒューメイン用ウェットスーツ", price: 250000, labor: 50, skill: 5000, mats: { "ゴム": 15, "プラスチック": 15, "布": 20 } },
+        { name: "ハンドドリル", price: 350000, labor: 100, skill: 20000, mats: { "ゴム": 10, "ジャンク電子部品": 20, "鉄": 25, "鋼鉄": 25 } },
+        { name: "Advanced Lockpick", price: 5000, labor: 25, skill: 5000, mats: { "Lockpick": 1, "アルミニウム": 5, "ゴム": 5 } },
+        { name: "Handcuffs", price: 1000000, labor: 100, skill: 20000, mats: { "アルミニウム": 50, "鉄": 50, "銅": 50, "鋼鉄": 50 } },
+        { name: "Disruptor", price: 500000, labor: 100, skill: 20000, mats: { "アルミニウム": 10, "ジャンク電子部品": 30, "プラスチック": 10, "銅": 15 } },
+        { name: "強力なC4爆弾", price: 150000, labor: 100, skill: 20000, mats: { "C4": 8, "ゴム": 30, "プラスチック": 30, "鉄の粉": 30 } },
+        { name: "Heavy Armor", price: 300000, labor: 100, skill: 10000, mats: { "ガラス": 15, "ゴム": 15, "布": 15, "金属スクラップ": 15, "鋼鉄": 15 } },
+        { name: "復号強化鍵", price: 100000, labor: 50, skill: 20000, mats: { "ゴム": 2, "ジャンク電子部品": 5, "銅": 5 } },
+        { name: "Hack Laptop", price: 150000, labor: 50, skill: 5000, mats: { "アルミニウム": 10, "ジャンク電子部品": 15, "鉄": 5, "銅": 5 } }
+    ]
+};
+
+// 名前順にソートする関数
+function getSortedData(category) {
+    return [...rawData[category]].sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+}
+
+let currentTab = 'weapon';
+let currentSortedList = [];
+
+function switchTab(tabName) {
+    currentTab = tabName;
+    
+    // タブの見た目更新
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('btn-' + tabName).classList.add('active');
+    
+    // ソート済みリストの取得
+    currentSortedList = getSortedData(currentTab);
+    
+    // セレクトボックスの更新
+    const select = document.getElementById('itemSelect');
+    select.innerHTML = '';
+    currentSortedList.forEach((item, index) => {
+        let opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = item.name;
+        select.appendChild(opt);
+    });
+    
+    calculate();
+}
+
+function calculate() {
+    const index = document.getElementById('itemSelect').value;
+    const count = Math.max(0, parseInt(document.getElementById('itemCount').value) || 0);
+    const item = currentSortedList[index];
+    const resultDiv = document.getElementById('results');
+
+    if (!item || count === 0) {
+        resultDiv.innerHTML = "<p style='color:red;'>作成個数を入力してください。</p>";
+        return;
+    }
+
+    let matsHtml = '';
+    for (const [matName, amount] of Object.entries(item.mats)) {
+        matsHtml += `<tr><td>${matName}</td><td class="material-count">${(amount * count).toLocaleString()}</td></tr>`;
+    }
+
+    resultDiv.innerHTML = `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">熟練度上限 (固定)</span>
+                <span class="stat-value">${item.skill.toLocaleString()}</span>
+            </div>
+            <div class="stat-card blue">
+                <span class="stat-label">必要労働力 (合計)</span>
+                <span class="stat-value">${(item.labor * count).toLocaleString()}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">単価</span>
+                <span class="stat-value">$${item.price.toLocaleString()}</span>
+            </div>
+            <div class="stat-card red">
+                <span class="stat-label">合計費用</span>
+                <span class="stat-value">$${(item.price * count).toLocaleString()}</span>
+            </div>
+        </div>
+
+        <h3>必要素材 (${count}個分)</h3>
+        <table>
+            <thead>
+                <tr><th>素材名</th><th>必要総数</th></tr>
+            </thead>
+            <tbody>
+                ${matsHtml}
+            </tbody>
+        </table>
+    `;
+}
+
+// 初期起動
+switchTab('weapon');
+</script>
+
+</body>
+</html>
