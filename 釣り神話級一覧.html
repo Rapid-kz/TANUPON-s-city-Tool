@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>釣り神話級一覧</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 30px; color: #333; line-height: 1.6; }
+        
+        /* フィルターボタンのスタイル */
+        .filter-group { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 8px 18px;
+            border: 2px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover { background-color: #f0f7ff; }
+        .filter-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        table { border-collapse: collapse; width: 100%; max-width: 900px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; color: #555; border-bottom: 2px solid #007bff; }
+        
+        /* 画像用セル */
+        .img-column { width: 120px; text-align: center; background: #fafafa; position: relative; }
+        .img-column::after { 
+            content: "No Image"; color: #ccc; font-size: 12px; 
+            display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .img-column img { 
+            position: relative; z-index: 2; max-width: 100%; height: auto; display: block; 
+        }
+    </style>
+</head>
+<body>
+
+<h2>釣り神話級一覧</h2>
+
+<div class="filter-group" id="filterGroup">
+    <button class="filter-btn active" data-filter="all">すべて</button>
+    <button class="filter-btn" data-filter="海">海</button>
+    <button class="filter-btn" data-filter="湖">湖</button>
+    <button class="filter-btn" data-filter="川">川</button>
+    <button class="filter-btn" data-filter="沼">沼</button>
+</div>
+
+<table id="targetTable">
+    <thead>
+        <tr>
+            <th>画像</th>
+            <th>種類</th>
+            <th>生息場所</th>
+            <th>最低価格</th>
+            <th>最高価格</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr data-habitat="海">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/9e1b3528-d89d-4881-b9ec-839864f2e685" alt="イタチザメ">
+	    </td>
+            <td>イタチザメ</td>
+            <td>海</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="海">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/c9dd50cb-b5b3-4b3e-99e8-7f7a1beb15f7" alt="真珠">
+	    </td>
+            <td>真珠</td>
+            <td>海</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="海">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/da0cb1b0-31c1-4359-9426-8d141252758f" alt="ヨーロッパチョウザメ">
+	    </td>
+            <td>ヨーロッパチョウザメ</td>
+            <td>海</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="海">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/21163b81-f585-461e-96db-01fcded078f6" alt="名前1">
+	    </td>
+            <td>名前1</td>
+            <td>海</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="湖">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/4fe8a957-42ee-422e-baf2-362d12d9733f" alt="名前2">
+	    </td>
+            <td>名前2</td>
+            <td>湖</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="川">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/decec927-7808-4680-b2c6-ea1c94821561" alt="名前3">
+	    </td>
+            <td>名前3</td>
+            <td>川</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="川">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/2b2cbea7-85f4-44b0-93c1-4feb3cf6366f" alt="名前4">
+	    </td>
+            <td>名前4</td>
+            <td>川</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+        <tr data-habitat="沼">
+            <td class="img-column">
+		<img src="https://github.com/user-attachments/assets/5a80af02-59ed-4b51-963b-17d367994096" alt="名前5">
+	    </td>
+            <td>名前5</td>
+            <td>沼</td>
+            <td>1</td>
+            <td>1000</td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    const buttons = document.querySelectorAll('.filter-btn');
+    const rows = document.querySelectorAll('#targetTable tbody tr');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // ボタンの活性状態を切り替え
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // フィルタリング処理
+            const filterValue = btn.getAttribute('data-filter');
+            
+            rows.forEach(row => {
+                const habitat = row.getAttribute('data-habitat');
+                if (filterValue === 'all' || habitat === filterValue) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
