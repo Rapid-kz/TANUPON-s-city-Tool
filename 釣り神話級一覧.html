@@ -4,27 +4,28 @@
     <meta charset="UTF-8">
     <title>釣り神話級一覧</title>
     <style>
-        body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 50px; color: #333; line-height: 1.6; }
+        body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 50px; color: #333; line-height: 1.6; background-color: #fcfcfc; }
         
+        /* 入力フォームのスタイル */
+        .input-section { 
+            max-width: 900px; background: white; padding: 20px; border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 30px; border-top: 4px solid #007bff;
+        }
+        .form-group { display: flex; gap: 10px; margin-top: 10px; }
+        select, input[type="number"] { padding: 10px; border: 1px solid #ddd; border-radius: 5px; flex: 1; }
+        .submit-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .submit-btn:hover { background: #0056b3; }
+
         /* フィルターボタンのスタイル */
         .filter-group { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
         .filter-btn {
-            padding: 8px 18px;
-            border: 2px solid #007bff;
-            background-color: white;
-            color: #007bff;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
+            padding: 8px 18px; border: 2px solid #007bff; background-color: white;
+            color: #007bff; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.3s;
         }
         .filter-btn:hover { background-color: #f0f7ff; }
-        .filter-btn.active {
-            background-color: #007bff;
-            color: white;
-        }
+        .filter-btn.active { background-color: #007bff; color: white; }
 
-        table { border-collapse: collapse; width: 100%; max-width: 900px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        table { border-collapse: collapse; width: 100%; max-width: 900px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: white; margin-bottom: 30px; }
         th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
         th { background-color: #f8f9fa; color: #555; border-bottom: 2px solid #007bff; }
         
@@ -32,18 +33,38 @@
         .img-column { width: 120px; text-align: center; background: #fafafa; position: relative; }
         .img-column::after { 
             content: "No Image"; color: #ccc; font-size: 12px; 
-            display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 1;
+            display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1;
         }
-        .img-column img { 
-            position: relative; z-index: 2; max-width: 100%; height: auto; display: block; 
-        }
+        .img-column img { position: relative; z-index: 2; max-width: 100%; height: auto; display: block; }
+
+        /* 履歴セクション */
+        .history-section { max-width: 900px; margin-top: 40px; }
+        .history-wrap { max-height: 200px; overflow-y: auto; border: 1px solid #eee; background: white; }
+        .history-table { font-size: 0.9em; box-shadow: none; }
+        .count-info { font-size: 0.8em; color: #666; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-<h2>釣り神話級一覧</h2>
+<div class="input-section">
+    <h2 style="margin-top:0; font-size: 1.2em;">新規価格記録</h2>
+    <div class="form-group">
+        <select id="fishSelect">
+            <option value="イタチザメ">イタチザメ</option>
+            <option value="シロチョウガイ">シロチョウガイ</option>
+            <option value="ヨーロッパチョウザメ">ヨーロッパチョウザメ</option>
+            <option value="ホホジロザメ">ホホジロザメ</option>
+            <option value="名前2">名前2</option>
+            <option value="名前3">名前3</option>
+            <option value="名前4">名前4</option>
+            <option value="名前5">名前5</option>
+        </select>
+        <input type="number" id="priceInput" placeholder="価格を入力">
+        <button class="submit-btn" onclick="addPriceRecord()">記録を追加</button>
+    </div>
+</div>
 
+<h2>釣り神話級一覧</h2>
 <div class="filter-group" id="filterGroup">
     <button class="filter-btn active" data-filter="all">すべて</button>
     <button class="filter-btn" data-filter="海">海</button>
@@ -63,122 +84,193 @@
         </tr>
     </thead>
     <tbody>
-        <tr data-habitat="海">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/9e1b3528-d89d-4881-b9ec-839864f2e685" alt="イタチザメ">
-	    </td>
+        <tr data-habitat="海" data-fish-name="イタチザメ">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/9e1b3528-d89d-4881-b9ec-839864f2e685" alt="イタチザメ"></td>
             <td>イタチザメ</td>
             <td>海</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="海">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/c9dd50cb-b5b3-4b3e-99e8-7f7a1beb15f7" alt="シロチョウガイ">
-	    </td>
+        <tr data-habitat="海" data-fish-name="シロチョウガイ">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/c9dd50cb-b5b3-4b3e-99e8-7f7a1beb15f7" alt="シロチョウガイ"></td>
             <td>シロチョウガイ</td>
             <td>海</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="海">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/da0cb1b0-31c1-4359-9426-8d141252758f" alt="ヨーロッパチョウザメ">
-	    </td>
+        <tr data-habitat="海" data-fish-name="ヨーロッパチョウザメ">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/da0cb1b0-31c1-4359-9426-8d141252758f" alt="ヨーロッパチョウザメ"></td>
             <td>ヨーロッパチョウザメ</td>
             <td>海</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="海">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/21163b81-f585-461e-96db-01fcded078f6" alt="ホホジロザメ">
-	    </td>
+        <tr data-habitat="海" data-fish-name="ホホジロザメ">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/21163b81-f585-461e-96db-01fcded078f6" alt="ホホジロザメ"></td>
             <td>ホホジロザメ</td>
             <td>海</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="湖">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/4fe8a957-42ee-422e-baf2-362d12d9733f" alt="名前2">
-	    </td>
+        <tr data-habitat="湖" data-fish-name="名前2">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/4fe8a957-42ee-422e-baf2-362d12d9733f" alt="名前2"></td>
             <td>名前2</td>
             <td>湖</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="川">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/decec927-7808-4680-b2c6-ea1c94821561" alt="名前3">
-	    </td>
+        <tr data-habitat="川" data-fish-name="名前3">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/decec927-7808-4680-b2c6-ea1c94821561" alt="名前3"></td>
             <td>名前3</td>
             <td>川</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="川">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/2b2cbea7-85f4-44b0-93c1-4feb3cf6366f" alt="名前4">
-	    </td>
+        <tr data-habitat="川" data-fish-name="名前4">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/2b2cbea7-85f4-44b0-93c1-4feb3cf6366f" alt="名前4"></td>
             <td>名前4</td>
             <td>川</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
-        <tr data-habitat="沼">
-            <td class="img-column">
-		<img src="https://github.com/user-attachments/assets/5a80af02-59ed-4b51-963b-17d367994096" alt="名前5">
-	    </td>
+        <tr data-habitat="沼" data-fish-name="名前5">
+            <td class="img-column"><img src="https://github.com/user-attachments/assets/5a80af02-59ed-4b51-963b-17d367994096" alt="名前5"></td>
             <td>名前5</td>
             <td>沼</td>
-            <td>1</td>
-            <td>1000</td>
+            <td class="min-price">-</td>
+            <td class="max-price">-</td>
         </tr>
     </tbody>
 </table>
 
+<div class="history-section">
+    <h3>記録履歴</h3>
+    <p id="counter" class="count-info">現在のデータ数: 0 / 100</p>
+    <div class="history-wrap">
+        <table class="history-table" id="historyTable">
+            <thead>
+                <tr>
+                    <th>日時</th>
+                    <th>種類</th>
+                    <th>入力価格</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <button onclick="localStorage.clear(); location.reload();" style="margin-top:10px; cursor:pointer; font-size: 0.7em;">データをリセット</button>
+</div>
+
 <footer style="position: absolute; top: 4px; left: 40px; padding: 10px; font-size: 0.75rem; color: #aaa;">
-    <a href="https://rapid-kz.github.io/TANUPON-s-city-Tool/#" 
-       style="color: inherit; text-decoration: none; transition: color 0.2s;">
-        TOPページ
-    </a>
+    <a href="https://rapid-kz.github.io/TANUPON-s-city-Tool/#" style="color: inherit; text-decoration: none;">TOPページ</a>
 </footer>
 
-<style>
-    footer a:hover {
-        color: #777 !important;
-        text-decoration: underline !important;
-    }
-</style>
-
 <script>
+    // --- 既存のフィルタリング機能 ---
     const buttons = document.querySelectorAll('.filter-btn');
-    const rows = document.querySelectorAll('#targetTable tbody tr');
+    const tableRows = document.querySelectorAll('#targetTable tbody tr');
 
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
-            // ボタンの活性状態を切り替え
             buttons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            // フィルタリング処理
             const filterValue = btn.getAttribute('data-filter');
-            
-            rows.forEach(row => {
+            tableRows.forEach(row => {
                 const habitat = row.getAttribute('data-habitat');
-                if (filterValue === 'all' || habitat === filterValue) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = (filterValue === 'all' || habitat === filterValue) ? '' : 'none';
             });
         });
     });
+
+    // --- 新規：価格管理ロジック ---
+    let records = JSON.parse(localStorage.getItem('fishingRecords')) || [];
+
+    function addPriceRecord() {
+        const fishName = document.getElementById('fishSelect').value;
+        const price = parseInt(document.getElementById('priceInput').value);
+
+        if (!price || price < 0) {
+            alert("価格を入力してください");
+            return;
+        }
+
+        const newEntry = {
+            id: Date.now(),
+            name: fishName,
+            price: price,
+            date: new Date().toLocaleString()
+        };
+
+        records.unshift(newEntry);
+
+        // 100件制限のチェック
+        if (records.length > 100) {
+            cleanRecords();
+        }
+
+        updateApp();
+        document.getElementById('priceInput').value = '';
+    }
+
+    // 100件超え時のデータ整理
+    function cleanRecords() {
+        const fishTypes = [...new Set(records.map(r => r.name))];
+        let survivors = [];
+
+        fishTypes.forEach(type => {
+            const items = records.filter(r => r.name === type);
+            if (items.length > 0) {
+                const min = items.reduce((prev, curr) => prev.price < curr.price ? prev : curr);
+                const max = items.reduce((prev, curr) => prev.price > curr.price ? prev : curr);
+                survivors.push(min);
+                if (min.id !== max.id) survivors.push(max);
+            }
+        });
+        // 整理して保存（新しい順）
+        records = survivors.sort((a, b) => b.id - a.id);
+        alert("100件を超えたため、各魚の最高・最低価格のみを保持しました。");
+    }
+
+    function updateApp() {
+        localStorage.setItem('fishingRecords', JSON.stringify(records));
+        renderTableStats();
+        renderHistory();
+        document.getElementById('counter').innerText = `現在のデータ数: ${records.length} / 100`;
+    }
+
+    // メインテーブルの「最低価格」「最高価格」列を更新
+    function renderTableStats() {
+        tableRows.forEach(row => {
+            const name = row.getAttribute('data-fish-name');
+            const fishRecords = records.filter(r => r.name === name);
+            
+            const minCell = row.querySelector('.min-price');
+            const maxCell = row.querySelector('.max-price');
+
+            if (fishRecords.length > 0) {
+                const prices = fishRecords.map(r => r.price);
+                minCell.innerText = Math.min(...prices).toLocaleString() + " 円";
+                maxCell.innerText = Math.max(...prices).toLocaleString() + " 円";
+            } else {
+                minCell.innerText = "-";
+                maxCell.innerText = "-";
+            }
+        });
+    }
+
+    // 履歴テーブルの更新
+    function renderHistory() {
+        const tbody = document.querySelector('#historyTable tbody');
+        tbody.innerHTML = '';
+        records.forEach(r => {
+            const row = `<tr><td>${r.date}</td><td>${r.name}</td><td>${r.price.toLocaleString()}円</td></tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // 初期化実行
+    updateApp();
+
 </script>
-
 </body>
-
 </html>
-
-
