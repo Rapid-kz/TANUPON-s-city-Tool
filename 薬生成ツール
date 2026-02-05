@@ -163,6 +163,20 @@
 
 </div>
 
+<footer style="position: absolute; top: 4px; left: 10px; padding: 10px; font-size: 0.75rem; color: #aaa;">
+    <a href="https://rapid-kz.github.io/TANUPON-s-city-Tool/#" 
+       style="color: inherit; text-decoration: none; transition: color 0.2s;">
+        TOPページ
+    </a>
+</footer>
+
+<style>
+    footer a:hover {
+        color: #777 !important;
+        text-decoration: underline !important;
+    }
+</style>
+
 <script>
     // 表のデータを定義（「-」は含めない）
     const recipeData = {
